@@ -27,7 +27,10 @@ echo "arch" > /etc/hostname
 grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id=GRUB
 grub-mkconfig -o /boot/grub/grub.cfg
 
-# (opcionalno) Kloniraj tvoje dotfiles
-# su - petar -c 'git clone https://github.com/Petar34/dotfiles ~/.config'
+# Kloniraj i primijeni dotfiles
+su - petar -c 'git clone https://github.com/Petar34/dotfiles ~/.dotfiles'
+su - petar -c 'cp -r ~/.dotfiles/.config ~/'
+su - petar -c 'cp ~/.dotfiles/.bashrc ~/'
+
 
 echo "[INFO] Post-install završen. Možeš sada izaći i rebootati."

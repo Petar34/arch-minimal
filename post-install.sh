@@ -17,7 +17,8 @@ pacman -S --noconfirm \
   feh picom rofi thunar alacritty \
   ttf-ubuntu-font-family papirus-icon-theme htop \
   base-devel sudo flameshot \
-  nvidia nvidia-utils gamemode
+  nvidia nvidia-utils gamemode \
+  thunderbird
 
 # 4. Omogući mrežu
 systemctl enable NetworkManager
@@ -41,8 +42,8 @@ grub-mkconfig -o /boot/grub/grub.cfg
 su - petar -c 'git clone https://aur.archlinux.org/yay.git ~/yay'
 su - petar -c 'cd ~/yay && makepkg -si --noconfirm'
 
-# 9. Instaliraj Google Chrome i Discord preko AUR-a
-su - petar -c 'yay -S --noconfirm google-chrome discord'
+# 9. Instaliraj AUR aplikacije (Chrome, Discord, Sidekick)
+su - petar -c 'yay -S --noconfirm google-chrome discord sidekick-browser-bin'
 
 # 10. Kloniraj i primijeni dotfiles
 su - petar -c 'git clone https://github.com/Petar34/dotfiles ~/.dotfiles'
@@ -51,3 +52,4 @@ su - petar -c 'cp ~/.dotfiles/.bashrc ~/'
 su - petar -c 'cp ~/.dotfiles/.xinitrc ~/'
 
 echo "[INFO] Post-install završen. Možeš sada izaći (exit) i pokrenuti reboot."
+

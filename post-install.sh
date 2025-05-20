@@ -62,7 +62,7 @@ systemctl enable postgresql
 systemctl start postgresql
 
 # 13. Kreiraj PostgreSQL korisnika i bazu
-sudo -u postgres psql -c "CREATE USER admin WITH PASSWORD 'lozinka';"
+sudo -u postgres psql -c "CREATE USER admin WITH PASSWORD 'administrator';"
 sudo -u postgres psql -c "CREATE DATABASE admin OWNER admin;"
 
 # 14. Omogući trust autentikaciju za localhost (samo za dev)

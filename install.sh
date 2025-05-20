@@ -51,7 +51,7 @@ man-db man-pages base-devel
 genfstab -U /mnt >> /mnt/etc/fstab
 
 # Postavi hostname (možeš slobodno promijeniti ime)
-echo "petar" > /mnt/etc/hostname
+echo "admin" > /mnt/etc/hostname
 
 # Postavi lokalizaciju (hrvatski jezik i vremenska zona)
 echo "LANG=hr_HR.UTF-8" > /mnt/etc/locale.conf

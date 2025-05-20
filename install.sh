@@ -44,44 +44,19 @@ genfstab -U /mnt >> /mnt/etc/fstab
 echo "admin" > /mnt/etc/hostname
 echo "LANG=hr_HR.UTF-8" > /mnt/etc/locale.conf
 ln -sf /usr/share/zoneinfo/Europe/Zagreb /mnt/etc/localtime
-
-# Lokalizacija (priprema za post-install)
 echo "en_US.UTF-8 UTF-8" >> /mnt/etc/locale.gen
 echo "hr_HR.UTF-8 UTF-8" >> /mnt/etc/locale.gen
 
-# Unutar chroota: dodaj post-install skriptu
-cat << 'EOF' > /mnt/root/post-install.sh
-#!/bin/bash
-set -e
-
-USERNAME=admin
-PASSWORD=admin
-
-# Generiraj locale
-locale-gen
-
-# Dodaj korisnika
-useradd -m -G wheel -s /bin/bash $USERNAME
-echo "$USERNAME:$PASSWORD" | chpasswd
-echo "%wheel ALL=(ALL:ALL) ALL" >> /etc/sudoers
-
-# Omogući mrežu
-systemctl enable NetworkManager
-
-# Instalacija GRUB bootloadera
-grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=GRUB
-grub-mkconfig -o /boot/grub/grub.cfg
-
-# Postavi root lozinku
-echo "root:$PASSWORD" | chpasswd
-
-echo "[+] Post-install završio. Spreman za reboot."
-EOF
+# Unutar chroota: preuzimanje post-install i post-i3 skripti s GitHub-a
+curl -o /mnt/root/post-install.sh https://raw.githubusercontent.com/Petar34/arch-minimal/main/post-install.sh
+curl -o /mnt/root/post-i3.sh https://raw.githubusercontent.com/Petar34/arch-minimal/main/post-i3.sh
 
 chmod +x /mnt/root/post-install.sh
+chmod +x /mnt/root/post-i3.sh
 
-# Pokreni unutar chroota
+# Pokretanje skripti unutar chroota
 arch-chroot /mnt /root/post-install.sh
+arch-chroot /mnt /root/post-i3.sh
 
 echo -e "\n[*] Instalacija završena. Reboot za pokretanje Arch Linuxa..."
 sleep 5

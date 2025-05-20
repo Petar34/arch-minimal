@@ -10,14 +10,22 @@ read -p "Upiši naziv diska (npr. /dev/sda ili /dev/nvme0n1): " DISK
 read -p "[UPOZORENJE] SVI PODACI NA $DISK ĆE BITI OBRISANI. Nastavi? (da/ne): " potvrda
 [[ $potvrda != "da" ]] && echo "Prekinuto." && exit 1
 
+echo "[INFO] Isključujem swap i odmontiram sve..."
+swapoff -a || true
+umount -R /mnt || true
+
 # Brisanje postojećih particija
 sgdisk --zap-all "$DISK"
 
 # Kreiranje particija
-parted "$DISK" mklabel gpt
-parted "$DISK" mkpart ESP fat32 1MiB 513MiB
-parted "$DISK" set 1 esp on
-parted "$DISK" mkpart primary ext4 513MiB 100%
+parted "$DISK" --script mklabel gpt
+parted "$DISK" --script mkpart ESP fat32 1MiB 513MiB
+parted "$DISK" --script set 1 esp on
+parted "$DISK" --script mkpart primary ext4 513MiB 100%
+
+# Informiraj kernel
+partprobe "$DISK"
+sleep 2  # pričekaj da kernel prepozna promjene
 
 # Formatiranje
 mkfs.fat -F32 "${DISK}p1"
@@ -33,11 +41,6 @@ fallocate -l 2G /mnt/swapfile
 chmod 600 /mnt/swapfile
 mkswap /mnt/swapfile
 swapon /mnt/swapfile
-
-# [NOVO] Mirrorlista
-echo "[INFO] Osvježavam mirror listu..."
-pacman -Sy reflector --noconfirm
-reflector --country Croatia,Germany --age 12 --protocol https --sort rate --save /etc/pacman.d/mirrorlist
 
 # Instalacija sistema
 pacstrap /mnt base linux linux-firmware grub efibootmgr sudo networkmanager neovim base-devel man-db man-pages curl git

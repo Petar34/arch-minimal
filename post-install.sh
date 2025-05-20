@@ -18,7 +18,7 @@ pacman -S --noconfirm \
   ttf-ubuntu-font-family papirus-icon-theme htop \
   base-devel sudo flameshot \
   nvidia nvidia-utils gamemode \
-  thunderbird
+  thunderbird postgresql cmake make gcc curl unzip
 
 # 4. Omogući mrežu
 systemctl enable NetworkManager
@@ -42,8 +42,8 @@ grub-mkconfig -o /boot/grub/grub.cfg
 su - petar -c 'git clone https://aur.archlinux.org/yay.git ~/yay'
 su - petar -c 'cd ~/yay && makepkg -si --noconfirm'
 
-# 9. Instaliraj AUR aplikacije (Chrome, Discord, Sidekick)
-su - petar -c 'yay -S --noconfirm google-chrome discord sidekick-browser-bin'
+# 9. Instaliraj AUR aplikacije (Chrome, Discord, Sidekick, najnoviji Python)
+su - petar -c 'yay -S --noconfirm google-chrome discord sidekick-browser-bin python311'
 
 # 10. Kloniraj i primijeni dotfiles
 su - petar -c 'git clone https://github.com/Petar34/dotfiles ~/.dotfiles'
@@ -51,5 +51,23 @@ su - petar -c 'cp -r ~/.dotfiles/.config ~/'
 su - petar -c 'cp ~/.dotfiles/.bashrc ~/'
 su - petar -c 'cp ~/.dotfiles/.xinitrc ~/'
 
-echo "[INFO] Post-install završen. Možeš sada izaći (exit) i pokrenuti reboot."
+# 11. Instalacija Ollama (bez modela – ti pokrećeš kad želiš)
+echo "[INFO] Instaliram Ollama..."
+curl -fsSL https://ollama.com/install.sh | sh
 
+# 12. Inicijalizacija PostgreSQL baze
+echo "[INFO] Postavljam PostgreSQL..."
+sudo -u postgres initdb --locale=hr_HR.UTF-8 -D /var/lib/postgres/data
+systemctl enable postgresql
+systemctl start postgresql
+
+# 13. Kreiraj PostgreSQL korisnika i bazu
+sudo -u postgres psql -c "CREATE USER petar WITH PASSWORD 'lozinka';"
+sudo -u postgres psql -c "CREATE DATABASE petar OWNER petar;"
+
+# 14. Omogući trust autentikaciju za localhost (samo za dev)
+echo "host    all             all             127.0.0.1/32            trust" >> /var/lib/postgres/data/pg_hba.conf
+echo "host    all             all             ::1/128                 trust" >> /var/lib/postgres/data/pg_hba.conf
+systemctl restart postgresql
+
+echo "[INFO] Post-install završen. Možeš sada izaći (exit) i pokrenuti reboot."

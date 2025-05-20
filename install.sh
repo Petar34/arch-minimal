@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e  # Prekini na prvoj grešci
+
 echo -e "\033[1;36m[INFO] Pokreće se automatska instalacija Arch Linuxa...\033[0m"
 
 lsblk
@@ -23,39 +25,64 @@ mkfs.ext4 "${DISK}p2"
 
 # Montiranje
 mount "${DISK}p2" /mnt
-mkdir -p /mnt/boot
-mount "${DISK}p1" /mnt/boot
+mkdir -p /mnt/boot/efi
+mount "${DISK}p1" /mnt/boot/efi
 
-# Swap (opcionalno)
+# Swap
 fallocate -l 2G /mnt/swapfile
 chmod 600 /mnt/swapfile
 mkswap /mnt/swapfile
 swapon /mnt/swapfile
-echo "/swapfile none swap defaults 0 0" >> /mnt/etc/fstab
 
 # Instalacija sistema
-pacstrap /mnt base linux linux-firmware grub sudo networkmanager neovim base-devel man-db man-pages
+pacstrap /mnt base linux linux-firmware grub efibootmgr sudo networkmanager neovim base-devel man-db man-pages curl git
 
-# Fstab
-mkdir -p /mnt/etc
+# fstab
 genfstab -U /mnt >> /mnt/etc/fstab
 
-# Hostname i jezik
+# Lokalizacija i hostname
 echo "admin" > /mnt/etc/hostname
 echo "LANG=hr_HR.UTF-8" > /mnt/etc/locale.conf
 ln -sf /usr/share/zoneinfo/Europe/Zagreb /mnt/etc/localtime
 
-# Priprema mount točaka za chroot
-mkdir -p /mnt/{proc,sys,dev,run,tmp}
-chmod 1777 /mnt/tmp
-mount --types proc /proc /mnt/proc
-mount --rbind /sys /mnt/sys
-mount --make-rslave /mnt/sys
-mount --rbind /dev /mnt/dev
-mount --make-rslave /mnt/dev
-mount --bind /run /mnt/run
+# Lokalizacija (priprema za post-install)
+echo "en_US.UTF-8 UTF-8" >> /mnt/etc/locale.gen
+echo "hr_HR.UTF-8 UTF-8" >> /mnt/etc/locale.gen
 
-# Preuzimanje i pokretanje post-install skripte unutar chroota
-curl -o /mnt/root/post-install.sh https://raw.githubusercontent.com/Petar34/arch-minimal/main/post-install.sh
+# Unutar chroota: dodaj post-install skriptu
+cat << 'EOF' > /mnt/root/post-install.sh
+#!/bin/bash
+set -e
+
+USERNAME=admin
+PASSWORD=admin
+
+# Generiraj locale
+locale-gen
+
+# Dodaj korisnika
+useradd -m -G wheel -s /bin/bash $USERNAME
+echo "$USERNAME:$PASSWORD" | chpasswd
+echo "%wheel ALL=(ALL:ALL) ALL" >> /etc/sudoers
+
+# Omogući mrežu
+systemctl enable NetworkManager
+
+# Instalacija GRUB bootloadera
+grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=GRUB
+grub-mkconfig -o /boot/grub/grub.cfg
+
+# Postavi root lozinku
+echo "root:$PASSWORD" | chpasswd
+
+echo "[+] Post-install završio. Spreman za reboot."
+EOF
+
 chmod +x /mnt/root/post-install.sh
+
+# Pokreni unutar chroota
 arch-chroot /mnt /root/post-install.sh
+
+echo -e "\n[*] Instalacija završena. Reboot za pokretanje Arch Linuxa..."
+sleep 5
+reboot

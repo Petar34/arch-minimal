@@ -9,13 +9,20 @@ if [[ $? -ne 0 ]]; then
   exit 1
 fi
 
+# Prikaži dostupne diskove
+echo -e "\nDostupni diskovi:"
+lsblk -dpno NAME,SIZE | grep -v loop
+echo ""
+
 # Potvrda korisnika prije brisanja diska
 read -p "Upiši naziv diska (npr. /dev/sda ili /dev/nvme0n1): " DISK
-read -p "[UPOZORENJE] SVI PODACI NA $DISK ĆE BITI OBRISANI. Nastavi? (y/n): " potvrda
-[[ $potvrda != "y" ]] && echo "Prekinuto." && exit 1
+echo "[UPOZORENJE] SVI PODACI NA $DISK ĆE BITI OBRISANI ZAUVIJEK."
+read -p "Jesi li siguran da želiš nastaviti? (upiši 'da' za potvrdu): " potvrda
+[[ $potvrda != "da" ]] && echo "[PREKID] Instalacija prekinuta." && exit 1
 
-# Brisanje postojećih particija
-sgdisk --zap-all $DISK
+# POTPUNO brisanje svih tragova sa diska
+wipefs -a "$DISK"
+sgdisk --zap-all "$DISK"
 
 # Kreiranje particija: EFI + root
 parted $DISK mklabel gpt
@@ -32,16 +39,12 @@ mount ${DISK}2 /mnt
 mkdir /mnt/boot
 mount ${DISK}1 /mnt/boot
 
-# (Opcionalno) Swap file – možeš obrisati ako ne trebaš
+# (Opcionalno) Swap file
 fallocate -l 2G /mnt/swapfile
 chmod 600 /mnt/swapfile
 mkswap /mnt/swapfile
 swapon /mnt/swapfile
 echo "/swapfile none swap defaults 0 0" >> /mnt/etc/fstab
-
-# (Opcionalno) Update mirror liste – komentiraj ako ne koristiš
-# pacman -Sy reflector --noconfirm
-# reflector --latest 5 --sort rate --save /etc/pacman.d/mirrorlist
 
 # Instalacija base sistema + alati
 pacstrap /mnt base linux linux-firmware grub sudo networkmanager neovim \
@@ -50,16 +53,16 @@ man-db man-pages base-devel
 # Generiraj fstab
 genfstab -U /mnt >> /mnt/etc/fstab
 
-# Postavi hostname (možeš slobodno promijeniti ime)
+# Postavi hostname
 echo "admin" > /mnt/etc/hostname
 
-# Postavi lokalizaciju (hrvatski jezik i vremenska zona)
+# Postavi lokalizaciju
 echo "LANG=hr_HR.UTF-8" > /mnt/etc/locale.conf
 ln -sf /usr/share/zoneinfo/Europe/Zagreb /mnt/etc/localtime
 
-# Preuzmi post-install.sh skriptu iz GitHub-a
+# Preuzmi post-install.sh
 curl -o /mnt/root/post-install.sh https://raw.githubusercontent.com/Petar34/arch-minimal/main/post-install.sh
 chmod +x /mnt/root/post-install.sh
 
-# Pokreni post-install.sh unutar chroot okruženja
+# Pokreni post-install.sh u chrootu
 arch-chroot /mnt /root/post-install.sh

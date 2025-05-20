@@ -4,8 +4,9 @@ set -e
 USERNAME=admin
 
 echo -e "\n\033[1;36m[INFO] Instalacija X servera, i3 i alata...\033[0m"
-pacman -Sy --noconfirm xorg xorg-xinit i3-wm i3status i3lock \
-  rofi feh picom lxappearance network-manager-applet xterm
+apt update
+apt install -y xorg i3 i3status i3lock rofi feh picom lxappearance \
+  network-manager-gnome xterm
 
 # Provjera postoji li home direktorij
 if [ ! -d "/home/$USERNAME" ]; then
@@ -22,7 +23,7 @@ mkdir -p /home/$USERNAME/.config/i3
 cat <<EOF > /home/$USERNAME/.config/i3/config
 exec --no-startup-id nm-applet
 exec --no-startup-id picom
-exec --no-startup-id feh --bg-scale /usr/share/backgrounds/archlinux/arch-wallpaper.jpg
+exec --no-startup-id feh --bg-scale /usr/share/backgrounds/ubuntu.png
 exec --no-startup-id setxkbmap hr
 EOF
 

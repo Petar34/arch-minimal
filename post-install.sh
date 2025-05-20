@@ -3,8 +3,8 @@
 echo "[INFO] Pokrećem postavke unutar sistema..."
 
 # 1. Dodaj korisnika petar
-useradd -m -G wheel -s /bin/bash petar
-echo "petar:lozinka" | chpasswd
+useradd -m -G wheel -s /bin/bash admin
+echo "admin:administrator" | chpasswd
 
 # 2. Omogući sudo za grupu wheel
 sed -i 's/# %wheel ALL=(ALL:ALL) ALL/%wheel ALL=(ALL:ALL) ALL/' /etc/sudoers
@@ -39,17 +39,17 @@ grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id=GRUB
 grub-mkconfig -o /boot/grub/grub.cfg
 
 # 8. Instaliraj yay (AUR helper)
-su - petar -c 'git clone https://aur.archlinux.org/yay.git ~/yay'
-su - petar -c 'cd ~/yay && makepkg -si --noconfirm'
+su - admin -c 'git clone https://aur.archlinux.org/yay.git ~/yay'
+su - admin -c 'cd ~/yay && makepkg -si --noconfirm'
 
 # 9. Instaliraj AUR aplikacije (Chrome, Discord, Sidekick, najnoviji Python)
-su - petar -c 'yay -S --noconfirm google-chrome discord sidekick-browser-bin python311'
+su - admin -c 'yay -S --noconfirm google-chrome discord sidekick-browser-bin python311'
 
 # 10. Kloniraj i primijeni dotfiles
-su - petar -c 'git clone https://github.com/Petar34/dotfiles ~/.dotfiles'
-su - petar -c 'cp -r ~/.dotfiles/.config ~/'
-su - petar -c 'cp ~/.dotfiles/.bashrc ~/'
-su - petar -c 'cp ~/.dotfiles/.xinitrc ~/'
+su - admin -c 'git clone https://github.com/Petar34/dotfiles ~/.dotfiles'
+su - admin -c 'cp -r ~/.dotfiles/.config ~/'
+su - admin -c 'cp ~/.dotfiles/.bashrc ~/'
+su - admin -c 'cp ~/.dotfiles/.xinitrc ~/'
 
 # 11. Instalacija Ollama (bez modela – ti pokrećeš kad želiš)
 echo "[INFO] Instaliram Ollama..."
@@ -62,8 +62,8 @@ systemctl enable postgresql
 systemctl start postgresql
 
 # 13. Kreiraj PostgreSQL korisnika i bazu
-sudo -u postgres psql -c "CREATE USER petar WITH PASSWORD 'lozinka';"
-sudo -u postgres psql -c "CREATE DATABASE petar OWNER petar;"
+sudo -u postgres psql -c "CREATE USER admin WITH PASSWORD 'lozinka';"
+sudo -u postgres psql -c "CREATE DATABASE admin OWNER admin;"
 
 # 14. Omogući trust autentikaciju za localhost (samo za dev)
 echo "host    all             all             127.0.0.1/32            trust" >> /var/lib/postgres/data/pg_hba.conf
@@ -72,7 +72,7 @@ systemctl restart postgresql
 
 # 15. Postavi user-manager CLI alat globalno
 echo "[INFO] Postavljam user-manager CLI alat..."
-cp /home/petar/.dotfiles/scripts/user-manager.sh /usr/local/bin/user-manager
+cp /home/admin/.dotfiles/scripts/user-manager.sh /usr/local/bin/user-manager
 chmod +x /usr/local/bin/user-manager
 
 echo "[INFO] Post-install završen. Možeš sada izaći (exit) i pokrenuti reboot."

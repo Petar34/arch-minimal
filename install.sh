@@ -27,6 +27,10 @@ fi
 read -p "[UPOZORENJE] SVI PODACI NA $DISK ĆE BITI OBRISANI. Nastavi? (da/ne): " potvrda
 [[ "$potvrda" != "da" ]] && echo "Prekinuto." && exit 1
 
+# Ako je disk montiran, odmontiraj ga
+umount -R /mnt 2>/dev/null || true
+swapoff -a || true
+
 # Obriši sve i kreiraj particije
 wipefs -a "$DISK"
 sgdisk --zap-all "$DISK"
@@ -45,19 +49,13 @@ mount "$ROOT" /mnt
 mkdir -p /mnt/boot
 mount "$EFI" /mnt/boot
 
-# Provjera montaže i slobodnog prostora
+# Provjera montaže
 df -h /mnt | grep -q "/mnt" || {
   echo "[GREŠKA] Nešto nije u redu s montiranjem /mnt."
   exit 1
 }
 
-AVAIL=$(df /mnt | awk 'NR==2 {print $4}')
-if [[ "$AVAIL" -lt 1500000 ]]; then
-  echo "[GREŠKA] Nedovoljno prostora na /mnt ($AVAIL KB)."
-  exit 1
-fi
-
-# Swap file
+# Swap (ne obavezno)
 fallocate -l 2G /mnt/swapfile || echo "[INFO] Preskočen swap (nije kritično)"
 chmod 600 /mnt/swapfile
 mkswap /mnt/swapfile && swapon /mnt/swapfile
@@ -67,10 +65,7 @@ echo "/swapfile none swap defaults 0 0" >> /mnt/etc/fstab
 pacstrap /mnt base linux linux-firmware grub sudo networkmanager neovim \
 man-db man-pages base-devel > /mnt/install.log
 
-# fstab
 genfstab -U /mnt >> /mnt/etc/fstab
-
-# Hostname i lokalizacija
 echo "admin" > /mnt/etc/hostname
 echo "LANG=hr_HR.UTF-8" > /mnt/etc/locale.conf
 ln -sf /usr/share/zoneinfo/Europe/Zagreb /mnt/etc/localtime

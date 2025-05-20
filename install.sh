@@ -34,6 +34,11 @@ chmod 600 /mnt/swapfile
 mkswap /mnt/swapfile
 swapon /mnt/swapfile
 
+# [NOVO] Mirrorlista
+echo "[INFO] Osvježavam mirror listu..."
+pacman -Sy reflector --noconfirm
+reflector --country Croatia,Germany --age 12 --protocol https --sort rate --save /etc/pacman.d/mirrorlist
+
 # Instalacija sistema
 pacstrap /mnt base linux linux-firmware grub efibootmgr sudo networkmanager neovim base-devel man-db man-pages curl git
 

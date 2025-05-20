@@ -70,4 +70,9 @@ echo "host    all             all             127.0.0.1/32            trust" >> 
 echo "host    all             all             ::1/128                 trust" >> /var/lib/postgres/data/pg_hba.conf
 systemctl restart postgresql
 
+# 15. Postavi user-manager CLI alat globalno
+echo "[INFO] Postavljam user-manager CLI alat..."
+cp /home/petar/.dotfiles/scripts/user-manager.sh /usr/local/bin/user-manager
+chmod +x /usr/local/bin/user-manager
+
 echo "[INFO] Post-install završen. Možeš sada izaći (exit) i pokrenuti reboot."

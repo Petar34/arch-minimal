@@ -1,6 +1,10 @@
 #!/bin/bash
 
-set -e  # Prekini na prvoj grešci
+set -e
+
+echo -e "\033[1;36m[INFO] Osvježavam mirror listu...\033[0m"
+pacman -Sy reflector --noconfirm
+reflector --country "Germany,Croatia,Netherlands,Austria" --latest 10 --sort rate --save /etc/pacman.d/mirrorlist
 
 echo -e "\033[1;36m[INFO] Pokreće se automatska instalacija Arch Linuxa...\033[0m"
 
@@ -10,22 +14,12 @@ read -p "Upiši naziv diska (npr. /dev/sda ili /dev/nvme0n1): " DISK
 read -p "[UPOZORENJE] SVI PODACI NA $DISK ĆE BITI OBRISANI. Nastavi? (da/ne): " potvrda
 [[ $potvrda != "da" ]] && echo "Prekinuto." && exit 1
 
-echo "[INFO] Isključujem swap i odmontiram sve..."
-swapoff -a || true
-umount -R /mnt || true
-
-# Brisanje postojećih particija
+# Brisanje i kreiranje particija
 sgdisk --zap-all "$DISK"
-
-# Kreiranje particija
-parted "$DISK" --script mklabel gpt
-parted "$DISK" --script mkpart ESP fat32 1MiB 513MiB
-parted "$DISK" --script set 1 esp on
-parted "$DISK" --script mkpart primary ext4 513MiB 100%
-
-# Informiraj kernel
-partprobe "$DISK"
-sleep 2  # pričekaj da kernel prepozna promjene
+parted "$DISK" mklabel gpt
+parted "$DISK" mkpart ESP fat32 1MiB 513MiB
+parted "$DISK" set 1 esp on
+parted "$DISK" mkpart primary ext4 513MiB 100%
 
 # Formatiranje
 mkfs.fat -F32 "${DISK}p1"
@@ -42,39 +36,37 @@ chmod 600 /mnt/swapfile
 mkswap /mnt/swapfile
 swapon /mnt/swapfile
 
-# Instalacija sistema
+# Instalacija paketa
 pacstrap /mnt base linux linux-firmware grub efibootmgr sudo networkmanager neovim base-devel man-db man-pages curl git
 
 # fstab
 mkdir -p /mnt/etc
 genfstab -U /mnt >> /mnt/etc/fstab
 
-# Lokalizacija i hostname
+# Lokalizacija
 echo "admin" > /mnt/etc/hostname
 echo "LANG=hr_HR.UTF-8" > /mnt/etc/locale.conf
 ln -sf /usr/share/zoneinfo/Europe/Zagreb /mnt/etc/localtime
 echo "en_US.UTF-8 UTF-8" >> /mnt/etc/locale.gen
 echo "hr_HR.UTF-8 UTF-8" >> /mnt/etc/locale.gen
 
-# Priprema za chroot – mount točke
-mkdir -p /mnt/{proc,sys,dev,run,tmp}
+# Mountanje potrebnih datotečnih sustava
+for dir in proc sys dev run tmp; do
+    mkdir -p /mnt/$dir
+done
 chmod 1777 /mnt/tmp
 mount --types proc /proc /mnt/proc
-mount --rbind /sys /mnt/sys
-mount --make-rslave /mnt/sys
-mount --rbind /dev /mnt/dev
-mount --make-rslave /mnt/dev
+mount --rbind /sys /mnt/sys && mount --make-rslave /mnt/sys
+mount --rbind /dev /mnt/dev && mount --make-rslave /mnt/dev
 mount --bind /run /mnt/run
 
-# Preuzimanje postinstall skripti
+# Preuzimanje skripti
 curl -o /mnt/root/post-install.sh https://raw.githubusercontent.com/Petar34/arch-minimal/main/post-install.sh
 curl -o /mnt/root/post-i3.sh https://raw.githubusercontent.com/Petar34/arch-minimal/main/post-i3.sh
+chmod +x /mnt/root/post-install.sh /mnt/root/post-i3.sh
 
-chmod +x /mnt/root/post-install.sh
-chmod +x /mnt/root/post-i3.sh
-
-# Pokretanje unutar chroota
+# Chroot i pokretanje postavki
 arch-chroot /mnt /root/post-install.sh
 arch-chroot /mnt /root/post-i3.sh
 
-echo -e "\n\033[1;32m[INFO] Instalacija završena. Možeš pokrenuti reboot.\033[0m"
+echo -e "\n\033[1;32m[INFO] Instalacija završena! Pokreni reboot.\033[0m"

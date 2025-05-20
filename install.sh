@@ -24,6 +24,7 @@ mount ${DISK}1 /mnt/boot
 
 # Instalacija base sistema
 pacstrap /mnt base linux linux-firmware grub sudo networkmanager neovim
+man-db man-pages base-devel
 
 # Generiraj fstab
 genfstab -U /mnt >> /mnt/etc/fstab

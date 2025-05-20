@@ -38,6 +38,7 @@ swapon /mnt/swapfile
 pacstrap /mnt base linux linux-firmware grub efibootmgr sudo networkmanager neovim base-devel man-db man-pages curl git
 
 # fstab
+mkdir -p /mnt/etc
 genfstab -U /mnt >> /mnt/etc/fstab
 
 # Lokalizacija i hostname
@@ -47,17 +48,25 @@ ln -sf /usr/share/zoneinfo/Europe/Zagreb /mnt/etc/localtime
 echo "en_US.UTF-8 UTF-8" >> /mnt/etc/locale.gen
 echo "hr_HR.UTF-8 UTF-8" >> /mnt/etc/locale.gen
 
-# Unutar chroota: preuzimanje post-install i post-i3 skripti s GitHub-a
+# Priprema za chroot – mount točke
+mkdir -p /mnt/{proc,sys,dev,run,tmp}
+chmod 1777 /mnt/tmp
+mount --types proc /proc /mnt/proc
+mount --rbind /sys /mnt/sys
+mount --make-rslave /mnt/sys
+mount --rbind /dev /mnt/dev
+mount --make-rslave /mnt/dev
+mount --bind /run /mnt/run
+
+# Preuzimanje postinstall skripti
 curl -o /mnt/root/post-install.sh https://raw.githubusercontent.com/Petar34/arch-minimal/main/post-install.sh
 curl -o /mnt/root/post-i3.sh https://raw.githubusercontent.com/Petar34/arch-minimal/main/post-i3.sh
 
 chmod +x /mnt/root/post-install.sh
 chmod +x /mnt/root/post-i3.sh
 
-# Pokretanje skripti unutar chroota
+# Pokretanje unutar chroota
 arch-chroot /mnt /root/post-install.sh
 arch-chroot /mnt /root/post-i3.sh
 
-echo -e "\n[*] Instalacija završena. Reboot za pokretanje Arch Linuxa..."
-sleep 5
-reboot
+echo -e "\n\033[1;32m[INFO] Instalacija završena. Možeš pokrenuti reboot.\033[0m"

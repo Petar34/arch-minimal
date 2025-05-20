@@ -3,15 +3,21 @@ set -e
 
 USERNAME=admin
 
-echo "[*] Instalacija X servera, i3 i alata..."
+echo -e "\n\033[1;36m[INFO] Instalacija X servera, i3 i alata...\033[0m"
 pacman -Sy --noconfirm xorg xorg-xinit i3-wm i3status i3lock \
   rofi feh picom lxappearance network-manager-applet xterm
 
-echo "[*] Postavljanje .xinitrc za korisnika $USERNAME..."
-echo "exec i3" > /home/$USERNAME/.xinitrc
-chown $USERNAME:$USERNAME /home/$USERNAME/.xinitrc
+# Provjera postoji li home direktorij
+if [ ! -d "/home/$USERNAME" ]; then
+  echo "[GREŠKA] /home/$USERNAME ne postoji!"
+  exit 1
+fi
 
-echo "[*] Kreiranje osnovnog i3 config-a..."
+echo "[INFO] Postavljam .xinitrc za korisnika $USERNAME..."
+echo "exec i3" > /home/$USERNAME/.xinitrc
+chown "$USERNAME:$USERNAME" /home/$USERNAME/.xinitrc
+
+echo "[INFO] Kreiram i3 konfiguraciju..."
 mkdir -p /home/$USERNAME/.config/i3
 cat <<EOF > /home/$USERNAME/.config/i3/config
 exec --no-startup-id nm-applet
@@ -20,6 +26,6 @@ exec --no-startup-id feh --bg-scale /usr/share/backgrounds/archlinux/arch-wallpa
 exec --no-startup-id setxkbmap hr
 EOF
 
-chown -R $USERNAME:$USERNAME /home/$USERNAME/.config/i3
+chown -R "$USERNAME:$USERNAME" /home/$USERNAME/.config/i3
 
-echo "[+] i3 i X spremni. Prijavi se kao $USERNAME i pokreni: startx"
+echo -e "\n\033[1;32m[ZAVRŠENO] i3 i X su spremni! Prijavi se kao $USERNAME i pokreni: startx\033[0m"

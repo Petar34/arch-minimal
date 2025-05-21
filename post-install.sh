@@ -19,7 +19,10 @@ apt install -y i3 xterm neovim git \
   thunderbird postgresql cmake make gcc
 
 # 3. Omogući mrežu
+echo "[INFO] Instaliram Network Manager i alat za ručno Wi-Fi spajanje..."
+apt install -y network-manager
 systemctl enable NetworkManager
+systemctl start NetworkManager
 
 # 4. Lokalizacija
 ln -sf /usr/share/zoneinfo/Europe/Zagreb /etc/localtime

@@ -1,2 +1,2 @@
 # ubuntu-minimal
-Automatska instalacija mog Arch Linux sistema
+Automatska instalacija mog ubuntu Linux sistema

@@ -59,6 +59,11 @@ su - admin -c 'cp -r ~/.dotfiles/.config ~/ || true'
 su - admin -c 'cp ~/.dotfiles/.bashrc ~/ || true'
 su - admin -c 'cp ~/.dotfiles/.xinitrc ~/ || true'
 
+# Ispravi vlasništvo (važno!)
+chown -R admin:admin /home/admin/.bashrc
+chown -R admin:admin /home/admin/.xinitrc
+chown -R admin:admin /home/admin/.config
+
 # 9. Ollama
 echo "[INFO] Instaliram Ollama..."
 curl -fsSL https://ollama.com/install.sh | sh

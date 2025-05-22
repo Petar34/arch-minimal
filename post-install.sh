@@ -26,6 +26,9 @@ apt install -y bluetooth bluez blueman pipewire-pulse
 systemctl enable bluetooth
 systemctl start bluetooth
 
+# Omogući PipeWire user servise za admin
+su - admin -c 'systemctl --user enable pipewire'
+su - admin -c 'systemctl --user enable pipewire-pulse'
 
 # 4. Omogući mrežu
 echo "[INFO] Instaliram Network Manager i alat za ručno Wi-Fi spajanje..."

@@ -2,7 +2,7 @@
 
 set -e
 
-echo -e "\033[1;36m[INFO] Pokreće se automatska instalacija Ubuntu Server 24.04...\033[0m"
+echo -e "\033[1;36m[INFO] Pokreće se automatska instalacija Debian 12.11...\033[0m"
 
 lsblk
 echo ""
@@ -32,8 +32,8 @@ chmod 600 /mnt/swapfile
 mkswap /mnt/swapfile
 swapon /mnt/swapfile
 
-# Bootstrap minimalne instalacije (Ubuntu base system)
-debootstrap noble /mnt http://archive.ubuntu.com/ubuntu/
+# Bootstrap minimalne instalacije (Debian base system)
+debootstrap bookworm /mnt http://deb.debian.org/debian/
 
 # Mountanje potrebnih sustava
 for dir in proc sys dev run tmp; do
@@ -46,6 +46,9 @@ mount --bind /proc /mnt/proc
 mount --bind /sys /mnt/sys
 mount --bind /run /mnt/run
 
+# DNS (ako nema mreže u chroot-u)
+cp /etc/resolv.conf /mnt/etc/resolv.conf
+
 # fstab
 UUID_ROOT=$(blkid -s UUID -o value "${DISK}p2")
 UUID_EFI=$(blkid -s UUID -o value "${DISK}p1")
@@ -56,6 +59,8 @@ echo "/swapfile none swap sw 0 0" >> /mnt/etc/fstab
 # Hostname i lokalizacija
 echo "admin" > /mnt/etc/hostname
 echo "LANG=hr_HR.UTF-8" > /mnt/etc/default/locale
+echo "hr_HR.UTF-8 UTF-8" >> /mnt/etc/locale.gen
+echo "en_US.UTF-8 UTF-8" >> /mnt/etc/locale.gen
 ln -sf /usr/share/zoneinfo/Europe/Zagreb /mnt/etc/localtime
 
 # Preuzimanje postinstall skripti
@@ -63,8 +68,11 @@ curl -o /mnt/root/post-install.sh https://raw.githubusercontent.com/Petar34/ubun
 curl -o /mnt/root/post-i3.sh https://raw.githubusercontent.com/Petar34/ubuntu-minimal/main/post-i3.sh
 chmod +x /mnt/root/post-install.sh /mnt/root/post-i3.sh
 
+# Generiraj locale
+chroot /mnt locale-gen
+
 # Chroot i nastavak instalacije
 chroot /mnt /root/post-install.sh
 chroot /mnt /root/post-i3.sh
 
-echo -e "\n\033[1;32m[INFO] Ubuntu instalacija završena! Možeš pokrenuti reboot.\033[0m"
+echo -e "\n\033[1;32m[INFO] Debian instalacija završena! Pokreni reboot.\033[0m"

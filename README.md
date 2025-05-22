@@ -1,2 +1,2 @@
-# ubuntu-minimal
-Automatska instalacija mog ubuntu Linux sistema
+# Debian-minimal
+Automatska instalacija mog debian Linux sistema

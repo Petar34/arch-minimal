@@ -1,22 +1,3 @@
-Hvala ti — sad kad imamo sve jasno, tvoj trenutni post-install.sh na GitHubu je skoro dobar, ali nije u potpunosti kompatibilan s Debianom 12.
-
-Zato ti dajem gotovu finalnu verziju koju samo trebaš zamijeniti u repozitoriju.
-
-
----
-
-✅ Link za zamjenu:
-
-Idi na:
-https://github.com/Petar34/ubuntu-minimal/blob/main/post-install.sh
-
-Klikni na "Edit this file" (olovčica) i zalijepi ovu verziju umjesto postojeće:
-
-
----
-
-✅ Finalna post-install.sh za Debian 12:
-
 #!/bin/bash
 set -e
 
@@ -98,11 +79,3 @@ echo '[ -z "$DISPLAY" ] && [ "$(tty)" = "/dev/tty1" ] && exec startx' >> /home/a
 chown admin:admin /home/admin/.bash_profile
 
 echo -e "\n\033[1;32m[ZAVRŠENO] post-install.sh za Debian + i3 je gotov. Pokreni reboot!\033[0m"
-
-
----
-
-Nakon toga samo commitaj promjenu na GitHubu i tvoja skripta će raditi savršeno na svakom Debian minimal sistemu s tvojim setupom.
-
-Želiš da ti još složim i README.md s uputama kako se koristi skripta?
-

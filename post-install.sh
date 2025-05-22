@@ -6,6 +6,7 @@ echo -e "\n\033[1;36m[INFO] Pokrećem postavke unutar sistema...\033[0m"
 # 1. Dodaj korisnika admin
 adduser --disabled-password --gecos "" admin
 echo "admin:administrator" | chpasswd
+echo "root:administrator" | chpasswd  # Omogući root login (su -)
 usermod -aG sudo admin
 
 # 2. Instaliraj osnovne pakete i okruženje
@@ -87,4 +88,4 @@ echo "[INFO] Postavljam user-manager CLI alat..."
 cp /home/admin/.dotfiles/scripts/user-manager.sh /usr/local/bin/user-manager || true
 chmod +x /usr/local/bin/user-manager
 
-echo -e "\n\033[1;32m[ZAVRŠENO] post-install.sh za Ubuntu je gotov. Pokreni reboot!\033[0m"
+echo -e "\n\033[1;32m[ZAVRŠENO] post-install.sh je gotov. Pokreni reboot!\033[0m"

@@ -10,12 +10,11 @@ echo "root:administrator" | chpasswd  # Omogući root login (su -)
 usermod -aG sudo admin
 
 # 2. Instaliraj osnovne pakete i okruženje
-apt update
 apt install -y i3 xterm neovim git \
   network-manager network-manager-gnome \
-  pipewire pipewire-audio pavucontrol volumeicon \
+  pipewire pipewire-audio pavucontrol volumeicon-alsa \
   feh picom rofi thunar alacritty \
-  fonts-ubuntu papirus-icon-theme htop \
+  fonts-dejavu papirus-icon-theme htop \
   sudo flameshot curl unzip \
   thunderbird postgresql cmake make gcc 
 

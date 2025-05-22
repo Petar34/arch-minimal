@@ -17,29 +17,37 @@ apt install -y i3 xterm neovim git \
   feh picom rofi thunar alacritty \
   fonts-ubuntu papirus-icon-theme htop \
   sudo flameshot curl unzip \
-  thunderbird postgresql cmake make gcc
+  thunderbird postgresql cmake make gcc 
 
-# 3. Omogući mrežu
+# 3. Bluetooth podrška
+apt install -y bluetooth bluez blueman pipewire-pulse
+
+# Omogući Bluetooth servis
+systemctl enable bluetooth
+systemctl start bluetooth
+
+
+# 4. Omogući mrežu
 echo "[INFO] Instaliram Network Manager i alat za ručno Wi-Fi spajanje..."
 apt install -y network-manager
 systemctl enable NetworkManager
 systemctl start NetworkManager
 
-# 4. Lokalizacija
+# 5. Lokalizacija
 ln -sf /usr/share/zoneinfo/Europe/Zagreb /etc/localtime
 timedatectl set-local-rtc 0
 locale-gen hr_HR.UTF-8 en_US.UTF-8
 update-locale LANG=hr_HR.UTF-8
 echo "KEYMAP=hr" > /etc/vconsole.conf
 
-# 5. Hostname
+# 6. Hostname
 echo "ubuntu" > /etc/hostname
 
-# 6. GRUB instalacija (pretpostavlja EFI već radi)
+# 7. GRUB instalacija (pretpostavlja EFI već radi)
 grub-install
 update-grub
 
-# 7. APT ekvivalenti za AUR (ručna instalacija)
+# 8. APT ekvivalenti za AUR (ručna instalacija)
 echo -e "\n[INFO] Instaliram dodatne aplikacije (Chrome, Discord, Sidekick)..."
 
 # Google Chrome
@@ -57,7 +65,7 @@ wget -qO sidekick.deb "https://downloads.meetsidekick.com/browser/linux/deb"
 apt install -y ./sidekick.deb || true
 rm sidekick.deb
 
-# 8. Dotfiles
+# 9. Dotfiles
 su - admin -c 'git clone https://github.com/Petar34/dotfiles ~/.dotfiles'
 su - admin -c 'cp -r ~/.dotfiles/.config ~/ || true'
 su - admin -c 'cp ~/.dotfiles/.bashrc ~/ || true'
@@ -68,11 +76,11 @@ chown -R admin:admin /home/admin/.bashrc
 chown -R admin:admin /home/admin/.xinitrc
 chown -R admin:admin /home/admin/.config
 
-# 9. Ollama
+# 10. Ollama
 echo "[INFO] Instaliram Ollama..."
 curl -fsSL https://ollama.com/install.sh | sh
 
-# 10. PostgreSQL setup
+# 11. PostgreSQL setup
 echo "[INFO] Postavljam PostgreSQL..."
 sudo -u postgres psql -c "CREATE USER admin WITH PASSWORD 'administrator';" || true
 sudo -u postgres psql -c "CREATE DATABASE admin OWNER admin;" || true
@@ -83,7 +91,7 @@ grep -q "127.0.0.1/32" "$PG_HBA" || echo "host    all             all           
 grep -q "::1/128" "$PG_HBA" || echo "host    all             all             ::1/128                 trust" >> "$PG_HBA"
 systemctl restart postgresql
 
-# 11. user-manager CLI
+# 12. user-manager CLI
 echo "[INFO] Postavljam user-manager CLI alat..."
 cp /home/admin/.dotfiles/scripts/user-manager.sh /usr/local/bin/user-manager || true
 chmod +x /usr/local/bin/user-manager
